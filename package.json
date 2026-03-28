@@ -1,0 +1,47 @@
+{
+  "name": "superpowers-copilot-agents",
+  "displayName": "Superpowers Copilot Agents",
+  "description": "Superpowers workflow skills converted to VS Code Copilot agents. Install once, get all agents automatically.",
+  "version": "1.0.0",
+  "publisher": "anothel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anothel/superpowers-copilot-agents"
+  },
+  "engines": {
+    "vscode": "^1.110.0"
+  },
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "keywords": [
+    "copilot",
+    "agent",
+    "superpowers",
+    "tdd",
+    "code-review",
+    "debugging",
+    "workflow",
+    "brainstorm",
+    "planning"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {},
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.110.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.9.3"
+  }
+}
