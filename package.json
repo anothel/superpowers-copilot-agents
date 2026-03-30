@@ -2,7 +2,7 @@
   "name": "superpowers-copilot-agents",
   "displayName": "Superpowers Copilot Agents",
   "description": "Superpowers workflow skills converted to VS Code Copilot agents. Install once, get all agents automatically.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "anothel",
   "license": "MIT",
   "repository": {
