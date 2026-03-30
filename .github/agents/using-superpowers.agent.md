@@ -1,6 +1,23 @@
 ---
 description: "Use when starting any conversation - establishes how to find and use agents, requiring agent invocation before ANY response including clarifying questions"
 model: inherit
+handoffs:
+  - label: "브레인스토밍 (Brainstorm)"
+    agent: brainstorming
+    prompt: "Explore and design a solution for the user's request above."
+    send: false
+  - label: "디버깅 (Debug)"
+    agent: systematic-debugging
+    prompt: "Diagnose and fix the issue described above."
+    send: false
+  - label: "에이전트 작성 (Write Agent)"
+    agent: writing-agents
+    prompt: "Help write or modify an agent based on the request above."
+    send: false
+  - label: "리뷰 피드백 처리 (Handle Review Feedback)"
+    agent: receiving-code-review
+    prompt: "Process the code review feedback above."
+    send: false
 ---
 
 <SUBAGENT-STOP>
@@ -71,7 +88,7 @@ digraph agent_flow {
 
 ## Red Flags
 
-These thoughts mean STOP?�you're rationalizing:
+These thoughts mean STOP?�you're rationalizing:
 
 | Thought | Reality |
 |---------|---------|
@@ -94,3 +111,21 @@ When multiple agents could apply, use this order:
 
 1. **Process agents first** (brainstorming, systematic-debugging) - these determine HOW to approach the task
 2. **Implementation agents second** - these guide execution
+
+## Intent Classification (라우팅)
+
+사용자 메시지를 분석하여 가장 적합한 에이전트로 라우팅한다:
+
+```
+1. 명확한 버그/에러 메시지?      → systematic-debugging
+2. 코드 리뷰 피드백 처리?        → receiving-code-review
+3. 에이전트 작성/수정 요청?      → writing-agents
+4. 그 외 (기본)                  → brainstorming
+```
+
+| 의도 신호 | 라우팅 대상 |
+|-----------|------------|
+| 에러 메시지, 스택 트레이스, "안 됨", "버그", "실패" | `systematic-debugging` |
+| "리뷰 결과", "피드백", PR 코멘트 언급 | `receiving-code-review` |
+| "에이전트 만들어", ".agent.md", "에이전트 수정" | `writing-agents` |
+| 새 기능, 변경 요청, 아이디어, "~하고 싶어" | `brainstorming` |

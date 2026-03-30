@@ -1,6 +1,19 @@
 ---
 description: "Use when executing implementation plans with independent tasks in the current session"
 model: inherit
+handoffs:
+  - label: "마무리 (Finish Branch)"
+    agent: finishing-a-development-branch
+    prompt: "All tasks are complete. Finish the development branch."
+    send: false
+  - label: "디버깅 (Debug)"
+    agent: systematic-debugging
+    prompt: "Diagnose the issue encountered during implementation."
+    send: false
+  - label: "코드 리뷰 요청 (Request Review)"
+    agent: requesting-code-review
+    prompt: "Request a code review for the changes made above."
+    send: false
 ---
 
 # Subagent-Driven Development
