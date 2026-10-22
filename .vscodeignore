@@ -1,4 +1,12 @@
 src/
-tsconfig.json
+dist/
 node_modules/
+scripts/
+docs/
+DEVELOPMENT.md
+package-lock.json
+*.vsix
+.superpowers/
+.gitattributes
+.gitignore
 

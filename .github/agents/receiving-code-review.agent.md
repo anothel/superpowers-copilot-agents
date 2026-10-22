@@ -1,6 +1,6 @@
 ---
-description: "Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation"
-model: inherit
+name: receiving-code-review
+description: Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation
 handoffs:
   - label: "서브에이전트 실행 (Resume Subagent Execution)"
     agent: subagent-driven-development
@@ -11,6 +11,16 @@ handoffs:
     prompt: "Continue execution with the review feedback applied."
     send: false
 ---
+
+## GitHub Copilot execution
+
+Read [Copilot tools and workflow rules](using-superpowers/references/copilot-tools.md) before acting. User and project instructions take precedence, including Git permissions. Read sibling `<name>.agent.md` files and apply their workflows inline in this session; do not invoke a Skill tool or delegate interactive planning. Use only an actually available subagent tool for bounded implementation or review. Model preferences below are advisory: select a model only when supported, otherwise use the available model without stalling.
+
+`<AGENTS_DIR>` means the absolute directory containing this Agent file, not the project being edited. Resolve helper paths from it and run helpers from the target repository working directory. Bash helpers need Bash (Git Bash on Windows), Git, and standard Unix tools; if unavailable, perform the documented steps with the available shell.
+
+## Git permissions
+
+Follow the user's Git policy before any commit, merge, push, reset, branch deletion, or worktree removal. A plan step or subagent template does not grant permission. When staging or commits are prohibited, leave changes in the working tree, record the baseline and changed paths, and pass `WORKTREE` as the final revision to the review-package helper. It captures tracked changes and new files without staging or committing. Separate pre-existing user changes from this task's scope. Such packages are cumulative from BASE: scope each review with its task brief and keep the previous package for a fix comparison; never invent a commit range or claim a task-only diff if it cannot be isolated. Keep the plan workspace and ledger while uncommitted changes remain.
 
 # Code Review Reception
 
@@ -36,7 +46,7 @@ WHEN receiving code review feedback:
 ## Forbidden Responses
 
 **NEVER:**
-- "You're absolutely right!" (explicit violation)
+- "You're absolutely right!" (explicit instruction-file violation)
 - "Great point!" / "Excellent feedback!" (performative)
 - "Let me implement that now" (before verification)
 
@@ -135,7 +145,7 @@ Push back when:
 - Reference working tests/code
 - Involve your human partner if architectural
 
-**Signal if uncomfortable pushing back out loud:** "Strange things are afoot at the Circle K"
+**If you're uncomfortable pushing back out loud:** Name that tension, then tell your partner about the issue you've seen. They'll appreciate your honesty.
 
 ## Acknowledging Correct Feedback
 
@@ -212,11 +222,3 @@ You understand 1,2,3,6. Unclear on 4,5.
 ## GitHub Thread Replies
 
 When replying to inline review comments on GitHub, reply in the comment thread (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a top-level PR comment.
-
-## The Bottom Line
-
-**External feedback = suggestions to evaluate, not orders to follow.**
-
-Verify. Question. Then implement.
-
-No performative agreement. Technical rigor always.

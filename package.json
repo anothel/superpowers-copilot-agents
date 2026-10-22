@@ -2,7 +2,7 @@
   "name": "superpowers-copilot-agents",
   "displayName": "Superpowers Copilot Agents",
   "description": "Superpowers workflow skills converted to VS Code Copilot agents. Install once, get all agents automatically.",
-  "version": "5.1.0",
+  "version": "7.0.1",
   "publisher": "anothel",
   "license": "MIT",
   "repository": {
@@ -27,21 +27,35 @@
     "brainstorm",
     "planning"
   ],
-  "main": "./dist/extension.js",
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-  "contributes": {},
+  "contributes": {
+    "chatAgents": [
+      { "path": "./.github/agents/using-superpowers.agent.md" },
+      { "path": "./.github/agents/brainstorming.agent.md" },
+      { "path": "./.github/agents/writing-plans.agent.md" },
+      { "path": "./.github/agents/executing-plans.agent.md" },
+      { "path": "./.github/agents/subagent-driven-development.agent.md" },
+      { "path": "./.github/agents/test-driven-development.agent.md" },
+      { "path": "./.github/agents/systematic-debugging.agent.md" },
+      { "path": "./.github/agents/requesting-code-review.agent.md" },
+      { "path": "./.github/agents/receiving-code-review.agent.md" },
+      { "path": "./.github/agents/finishing-a-development-branch.agent.md" },
+      { "path": "./.github/agents/dispatching-parallel-agents.agent.md" },
+      { "path": "./.github/agents/using-git-worktrees.agent.md" },
+      { "path": "./.github/agents/verification-before-completion.agent.md" },
+      { "path": "./.github/agents/writing-agents.agent.md" },
+      { "path": "./.github/agents/diagnosing-superpowers.agent.md" },
+      { "path": "./.github/agents/code-reviewer.agent.md" }
+    ]
+  },
   "scripts": {
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "package": "vsce package",
-    "publish": "vsce publish"
+    "check": "node scripts/check-agents.cjs",
+    "test": "node --test scripts/visual-server.test.cjs",
+    "vscode:prepublish": "npm run check",
+    "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --no-dependencies"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@types/vscode": "^1.110.0",
     "@vscode/vsce": "^3.0.0",
-    "typescript": "^5.9.3"
+    "js-yaml": "^4.1.1"
   }
 }

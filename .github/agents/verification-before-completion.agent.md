@@ -1,6 +1,6 @@
 ---
-description: "Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always"
-model: inherit
+name: verification-before-completion
+description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
 handoffs:
   - label: "마무리 (Finish Branch)"
     agent: finishing-a-development-branch
@@ -8,11 +8,19 @@ handoffs:
     send: false
 ---
 
+## GitHub Copilot execution
+
+Read [Copilot tools and workflow rules](using-superpowers/references/copilot-tools.md) before acting. User and project instructions take precedence, including Git permissions. Read sibling `<name>.agent.md` files and apply their workflows inline in this session; do not invoke a Skill tool or delegate interactive planning. Use only an actually available subagent tool for bounded implementation or review. Model preferences below are advisory: select a model only when supported, otherwise use the available model without stalling.
+
+`<AGENTS_DIR>` means the absolute directory containing this Agent file, not the project being edited. Resolve helper paths from it and run helpers from the target repository working directory. Bash helpers need Bash (Git Bash on Windows), Git, and standard Unix tools; if unavailable, perform the documented steps with the available shell.
+
+## Git permissions
+
+Follow the user's Git policy before any commit, merge, push, reset, branch deletion, or worktree removal. A plan step or subagent template does not grant permission. When staging or commits are prohibited, leave changes in the working tree, record the baseline and changed paths, and pass `WORKTREE` as the final revision to the review-package helper. It captures tracked changes and new files without staging or committing. Separate pre-existing user changes from this task's scope. Such packages are cumulative from BASE: scope each review with its task brief and keep the previous package for a fix comparison; never invent a commit range or claim a task-only diff if it cannot be isolated. Keep the plan workspace and ledger while uncommitted changes remain.
+
 # Verification Before Completion
 
 ## Overview
-
-Claiming work is complete without verification is dishonesty, not efficiency.
 
 **Core principle:** Evidence before claims, always.
 
@@ -110,15 +118,6 @@ Skip any step = lying, not verifying
 ❌ Trust agent report
 ```
 
-## Why This Matters
-
-From 24 failure memories:
-- your human partner said "I don't believe you" - trust broken
-- Undefined functions shipped - would crash
-- Missing requirements shipped - incomplete features
-- Time wasted on false completion → redirect → rework
-- Violates: "Honesty is a core value. If you lie, you'll be replaced."
-
 ## When To Apply
 
 **ALWAYS before:**
@@ -134,11 +133,3 @@ From 24 failure memories:
 - Paraphrases and synonyms
 - Implications of success
 - ANY communication suggesting completion/correctness
-
-## The Bottom Line
-
-**No shortcuts for verification.**
-
-Run the command. Read the output. THEN claim the result.
-
-This is non-negotiable.

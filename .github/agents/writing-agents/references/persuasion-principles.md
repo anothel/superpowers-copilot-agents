@@ -1,8 +1,8 @@
-# Persuasion Principles for Skill Design
+# Persuasion Principles for Agent Design
 
 ## Overview
 
-LLMs respond to the same persuasion principles as humans. Understanding this psychology helps you design more effective skills - not to manipulate, but to ensure critical practices are followed even under pressure.
+LLMs respond to the same persuasion principles as humans. Understanding this psychology helps you design more effective workflows - not to manipulate, but to ensure critical practices are followed even under pressure.
 
 **Research foundation:** Meincke et al. (2025) tested 7 persuasion principles with N=28,000 AI conversations. Persuasion techniques more than doubled compliance rates (33% → 72%, p < .001).
 
@@ -11,13 +11,13 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 ### 1. Authority
 **What it is:** Deference to expertise, credentials, or official sources.
 
-**How it works in skills:**
+**How it works in workflows:**
 - Imperative language: "YOU MUST", "Never", "Always"
 - Non-negotiable framing: "No exceptions"
 - Eliminates decision fatigue and rationalization
 
 **When to use:**
-- Discipline-enforcing skills (TDD, verification requirements)
+- Discipline-enforcing workflows (TDD, verification requirements)
 - Safety-critical practices
 - Established best practices
 
@@ -30,26 +30,26 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 ### 2. Commitment
 **What it is:** Consistency with prior actions, statements, or public declarations.
 
-**How it works in skills:**
-- Require announcements: "Announce skill usage"
+**How it works in workflows:**
+- Require announcements: "Announce workflow usage"
 - Force explicit choices: "Choose A, B, or C"
-- Use tracking: TodoWrite for checklists
+- Use tracking: todos for checklists
 
 **When to use:**
-- Ensuring skills are actually followed
+- Ensuring workflows are actually followed
 - Multi-step processes
 - Accountability mechanisms
 
 **Example:**
 ```markdown
-✅ When you find a skill, you MUST announce: "I'm using [Skill Name]"
-❌ Consider letting your partner know which skill you're using.
+✅ When you find a workflow, you MUST announce: "I'm using [Agent Name]"
+❌ Consider letting your partner know which workflow you're using.
 ```
 
 ### 3. Scarcity
 **What it is:** Urgency from time limits or limited availability.
 
-**How it works in skills:**
+**How it works in workflows:**
 - Time-bound requirements: "Before proceeding"
 - Sequential dependencies: "Immediately after X"
 - Prevents procrastination
@@ -68,7 +68,7 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 ### 4. Social Proof
 **What it is:** Conformity to what others do or what's considered normal.
 
-**How it works in skills:**
+**How it works in workflows:**
 - Universal patterns: "Every time", "Always"
 - Failure modes: "X without Y = failure"
 - Establishes norms
@@ -80,14 +80,14 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 
 **Example:**
 ```markdown
-✅ Checklists without TodoWrite tracking = steps get skipped. Every time.
-❌ Some people find TodoWrite helpful for checklists.
+✅ Checklists without todo tracking = steps get skipped. Every time.
+❌ Some people find a todo list helpful for checklists.
 ```
 
 ### 5. Unity
 **What it is:** Shared identity, "we-ness", in-group belonging.
 
-**How it works in skills:**
+**How it works in workflows:**
 - Collaborative language: "our codebase", "we're colleagues"
 - Shared goals: "we both want quality"
 
@@ -107,7 +107,7 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 
 **How it works:**
 - Use sparingly - can feel manipulative
-- Rarely needed in skills
+- Rarely needed in workflows
 
 **When to avoid:**
 - Almost always (other principles more effective)
@@ -123,9 +123,9 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 **When to avoid:**
 - Always for discipline enforcement
 
-## Principle Combinations by Skill Type
+## Principle Combinations by Agent Type
 
-| Skill Type | Use | Avoid |
+| Agent Type | Use | Avoid |
 |------------|-----|-------|
 | Discipline-enforcing | Authority + Commitment + Social Proof | Liking, Reciprocity |
 | Guidance/technique | Moderate Authority + Unity | Heavy authority |
@@ -178,7 +178,7 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 
 ## Quick Reference
 
-When designing a skill, ask:
+When designing a workflow, ask:
 
 1. **What type is it?** (Discipline vs. guidance vs. reference)
 2. **What behavior am I trying to change?**

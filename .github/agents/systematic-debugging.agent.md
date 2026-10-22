@@ -1,6 +1,6 @@
 ---
-description: "Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes"
-model: inherit
+name: systematic-debugging
+description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
 handoffs:
   - label: "브레인스토밍 (Brainstorm)"
     agent: brainstorming
@@ -14,9 +14,11 @@ handoffs:
 
 # Systematic Debugging
 
-## Overview
+## Copilot Execution
 
-Random fixes waste time and create new bugs. Quick patches mask underlying issues.
+Read [Copilot tool mapping](using-superpowers/references/copilot-tools.md). Run this workflow in GitHub Copilot Chat in VS Code. Read and apply interactive sibling agent instructions inline in the main session. Delegate only bounded implementation or review tasks when a subagent tool is available. Use tools actually exposed by Copilot. User and project instructions override workflow defaults, including Git operations and verification.
+
+## Overview
 
 **Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
 
@@ -70,7 +72,7 @@ You MUST complete each phase before proceeding to the next.
    - Can you trigger it reliably?
    - What are the exact steps?
    - Does it happen every time?
-   - If not reproducible ??gather more data, don't guess
+   - If not reproducible → gather more data, don't guess
 
 3. **Check Recent Changes**
    - What changed that could cause this?
@@ -80,7 +82,7 @@ You MUST complete each phase before proceeding to the next.
 
 4. **Gather Evidence in Multi-Component Systems**
 
-   **WHEN system has multiple components (CI ??build ??signing, API ??service ??database):**
+   **WHEN system has multiple components (CI → build → signing, API → service → database):**
 
    **BEFORE proposing fixes, add diagnostic instrumentation:**
    ```
@@ -99,11 +101,11 @@ You MUST complete each phase before proceeding to the next.
    ```bash
    # Layer 1: Workflow
    echo "=== Secrets available in workflow: ==="
-   echo "IDENTITY: ${IDENTITY:+SET}${IDENTITY:-UNSET}"
+   echo "IDENTITY: $([ -n "${IDENTITY:-}" ] && echo SET || echo UNSET)"
 
    # Layer 2: Build script
    echo "=== Env vars in build script: ==="
-   env | grep IDENTITY || echo "IDENTITY not in environment"
+   printenv IDENTITY >/dev/null 2>&1 && echo "IDENTITY in environment" || echo "IDENTITY not in environment"
 
    # Layer 3: Signing script
    echo "=== Keychain state: ==="
@@ -114,13 +116,13 @@ You MUST complete each phase before proceeding to the next.
    codesign --sign "$IDENTITY" --verbose=4 "$APP"
    ```
 
-   **This reveals:** Which layer fails (secrets ??workflow ?? workflow ??build ??
+   **This reveals:** Which layer fails (secrets → workflow ✓, workflow → build ✗)
 
 5. **Trace Data Flow**
 
    **WHEN error is deep in call stack:**
 
-   See `systematic-debugging/root-cause-tracing.md` for the complete backward tracing technique.
+   See `systematic-debugging/root-cause-tracing.md` in the `systematic-debugging/` resource directory for the complete backward tracing technique.
 
    **Quick version:**
    - Where does bad value originate?
@@ -166,7 +168,7 @@ You MUST complete each phase before proceeding to the next.
    - Don't fix multiple things at once
 
 3. **Verify Before Continuing**
-   - Did it work? Yes ??Phase 4
+   - Did it work? Yes → Phase 4
    - Didn't work? Form NEW hypothesis
    - DON'T add more fixes on top
 
@@ -185,7 +187,7 @@ You MUST complete each phase before proceeding to the next.
    - Automated test if possible
    - One-off test script if no framework
    - MUST have before fixing
-   - Use the `test-driven-development` agent for writing proper failing tests
+   - Use the [test-driven-development](test-driven-development.agent.md) agent for writing proper failing tests
 
 2. **Implement Single Fix**
    - Address the root cause identified
@@ -197,12 +199,13 @@ You MUST complete each phase before proceeding to the next.
    - Test passes now?
    - No other tests broken?
    - Issue actually resolved?
+   - Use the [verification-before-completion](verification-before-completion.agent.md) agent before claiming success
 
 4. **If Fix Doesn't Work**
    - STOP
    - Count: How many fixes have you tried?
    - If < 3: Return to Phase 1, re-analyze with new information
-   - **If ??3: STOP and question the architecture (step 5 below)**
+   - **If ≥ 3: STOP and question the architecture (step 5 below)**
    - DON'T attempt Fix #4 without architectural discussion
 
 5. **If 3+ Fixes Failed: Question Architecture**
@@ -246,7 +249,7 @@ If you catch yourself thinking:
 - "Is that not happening?" - You assumed without verifying
 - "Will it show us...?" - You should have added evidence gathering
 - "Stop guessing" - You're proposing fixes without understanding
-- "Ultrathink this" - Question fundamentals, not just symptoms
+- "Ultra-think this" - Question fundamentals, not just symptoms
 - "We're stuck?" (frustrated) - Your approach isn't working
 
 **When you see these:** STOP. Return to Phase 1.
@@ -261,7 +264,7 @@ If you catch yourself thinking:
 | "I'll write test after confirming fix works" | Untested fixes don't stick. Test first proves it. |
 | "Multiple fixes at once saves time" | Can't isolate what worked. Causes new bugs. |
 | "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely. |
-| "I see the problem, let me fix it" | Seeing symptoms ??understanding root cause. |
+| "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
 | "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question pattern, don't fix again. |
 
 ## Quick Reference
@@ -286,20 +289,8 @@ If systematic investigation reveals issue is truly environmental, timing-depende
 
 ## Supporting Techniques
 
-These techniques are part of systematic debugging and available in the `systematic-debugging/` directory:
+These techniques are part of systematic debugging and available in the `systematic-debugging/` resource directory:
 
 - **`systematic-debugging/root-cause-tracing.md`** - Trace bugs backward through call stack to find original trigger
 - **`systematic-debugging/defense-in-depth.md`** - Add validation at multiple layers after finding root cause
 - **`systematic-debugging/condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
-
-**Related agents:**
-- **`test-driven-development`** - For creating failing test case (Phase 4, Step 1)
-- **`verification-before-completion`** - Verify fix worked before claiming success
-
-## Real-World Impact
-
-From debugging sessions:
-- Systematic approach: 15-30 minutes to fix
-- Random fixes approach: 2-3 hours of thrashing
-- First-time fix rate: 95% vs 40%
-- New bugs introduced: Near zero vs common

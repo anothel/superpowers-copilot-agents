@@ -1,7 +1,17 @@
 ---
-description: "Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies"
-model: inherit
+name: dispatching-parallel-agents
+description: Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies
 ---
+
+## GitHub Copilot execution
+
+Read [Copilot tools and workflow rules](using-superpowers/references/copilot-tools.md) before acting. User and project instructions take precedence, including Git permissions. Read sibling `<name>.agent.md` files and apply their workflows inline in this session; do not invoke a Skill tool or delegate interactive planning. Use only an actually available subagent tool for bounded implementation or review. Model preferences below are advisory: select a model only when supported, otherwise use the available model without stalling.
+
+`<AGENTS_DIR>` means the absolute directory containing this Agent file, not the project being edited. Resolve helper paths from it and run helpers from the target repository working directory. Bash helpers need Bash (Git Bash on Windows), Git, and standard Unix tools; if unavailable, perform the documented steps with the available shell.
+
+## Git permissions
+
+Follow the user's Git policy before any commit, merge, push, reset, branch deletion, or worktree removal. A plan step or subagent template does not grant permission. When staging or commits are prohibited, leave changes in the working tree, record the baseline and changed paths, and pass `WORKTREE` as the final revision to the review-package helper. It captures tracked changes and new files without staging or committing. Separate pre-existing user changes from this task's scope. Such packages are cumulative from BASE: scope each review with its task brief and keep the previous package for a fix comparison; never invent a commit range or claim a task-only diff if it cannot be isolated. Keep the plan workspace and ledger while uncommitted changes remain.
 
 # Dispatching Parallel Agents
 
@@ -65,13 +75,16 @@ Each agent gets:
 
 ### 3. Dispatch in Parallel
 
-```typescript
-// In Claude Code / AI environment
-Task("Fix agent-tool-abort.test.ts failures")
-Task("Fix batch-completion-behavior.test.ts failures")
-Task("Fix tool-approval-race-conditions.test.ts failures")
-// All three run concurrently
+Issue all three subagent dispatches in the same response — they run in parallel:
+
+```text
+Subagent (use the available tool; illustrative prompt fields): "Fix agent-tool-abort.test.ts failures"
+Subagent (use the available tool; illustrative prompt fields): "Fix batch-completion-behavior.test.ts failures"
+Subagent (use the available tool; illustrative prompt fields): "Fix tool-approval-race-conditions.test.ts failures"
+# All three run concurrently.
 ```
+
+Multiple dispatch calls in one response = parallel execution. One per response = sequential.
 
 ### 4. Review and Integrate
 
@@ -155,15 +168,6 @@ Agent 3 → Fix tool-approval-race-conditions.test.ts
 
 **Integration:** All fixes independent, no conflicts, full suite green
 
-**Time saved:** 3 problems solved in parallel vs sequentially
-
-## Key Benefits
-
-1. **Parallelization** - Multiple investigations happen simultaneously
-2. **Focus** - Each agent has narrow scope, less context to track
-3. **Independence** - Agents don't interfere with each other
-4. **Speed** - 3 problems solved in time of 1
-
 ## Verification
 
 After agents return:
@@ -171,12 +175,3 @@ After agents return:
 2. **Check for conflicts** - Did agents edit same code?
 3. **Run full suite** - Verify all fixes work together
 4. **Spot check** - Agents can make systematic errors
-
-## Real-World Impact
-
-From debugging session (2025-10-03):
-- 6 failures across 3 files
-- 3 agents dispatched in parallel
-- All investigations completed concurrently
-- All fixes integrated successfully
-- Zero conflicts between agent changes

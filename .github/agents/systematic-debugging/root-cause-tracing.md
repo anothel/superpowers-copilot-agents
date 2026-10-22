@@ -33,7 +33,7 @@ digraph when_to_use {
 
 ### 1. Observe the Symptom
 ```
-Error: git init failed in /Users/jesse/project/packages/core
+Error: git init failed in ~/project/packages/core
 ```
 
 ### 2. Find Immediate Cause
@@ -101,8 +101,12 @@ If something appears during tests but you don't know which test:
 Use the bisection script `find-polluter.sh` in this directory:
 
 ```bash
-./find-polluter.sh '.git' 'src/**/*.test.ts'
+bash "/absolute/installed/path/to/systematic-debugging/find-polluter.sh" '.git' 'src/**/*.test.ts'
 ```
+
+Resolve the script from the extension's resource directory, while keeping the
+terminal's working directory at the project whose tests you are investigating.
+On Windows, invoke the script with Git Bash.
 
 Runs tests one-by-one, stops at first polluter. See script for usage.
 

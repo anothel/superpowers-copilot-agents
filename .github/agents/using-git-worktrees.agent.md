@@ -1,6 +1,6 @@
 ---
-description: "Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback"
-model: inherit
+name: using-git-worktrees
+description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback
 handoffs:
   - label: "서브에이전트 실행 (Subagent Execution)"
     agent: subagent-driven-development
@@ -12,6 +12,16 @@ handoffs:
     send: false
 ---
 
+## GitHub Copilot execution
+
+Read [Copilot tools and workflow rules](using-superpowers/references/copilot-tools.md) before acting. User and project instructions take precedence, including Git permissions. Read sibling `<name>.agent.md` files and apply their workflows inline in this session; do not invoke a Skill tool or delegate interactive planning. Use only an actually available subagent tool for bounded implementation or review. Model preferences below are advisory: select a model only when supported, otherwise use the available model without stalling.
+
+`<AGENTS_DIR>` means the absolute directory containing this Agent file, not the project being edited. Resolve helper paths from it and run helpers from the target repository working directory. Bash helpers need Bash (Git Bash on Windows), Git, and standard Unix tools; if unavailable, perform the documented steps with the available shell.
+
+## Git permissions
+
+Follow the user's Git policy before any commit, merge, push, reset, branch deletion, or worktree removal. A plan step or subagent template does not grant permission. When staging or commits are prohibited, leave changes in the working tree, record the baseline and changed paths, and pass `WORKTREE` as the final revision to the review-package helper. It captures tracked changes and new files without staging or committing. Separate pre-existing user changes from this task's scope. Such packages are cumulative from BASE: scope each review with its task brief and keep the previous package for a fix comparison; never invent a commit range or claim a task-only diff if it cannot be isolated. Keep the plan workspace and ledger while uncommitted changes remain.
+
 # Using Git Worktrees
 
 ## Overview
@@ -20,7 +30,7 @@ Ensure work happens in an isolated workspace. Prefer your platform's native work
 
 **Core principle:** Detect existing isolation first. Then use native tools. Then fall back to git. Never fight the harness.
 
-**Announce at start:** "I'm using the using-git-worktrees agent to set up an isolated workspace."
+**Announce at start:** "I'm using the using-git-worktrees agent workflow to set up an isolated workspace."
 
 ## Step 0: Detect Existing Isolation
 
@@ -39,7 +49,7 @@ BRANCH=$(git branch --show-current)
 git rev-parse --show-superproject-working-tree 2>/dev/null
 ```
 
-**If `GIT_DIR != GIT_COMMON` (and not a submodule):** You are already in a linked worktree. Skip to Step 3 (Project Setup). Do NOT create another worktree.
+**If `GIT_DIR != GIT_COMMON` (and not a submodule):** You are already in a linked worktree. Skip to Step 2 (Project Setup). Do NOT create another worktree.
 
 Report with branch state:
 - On a branch: "Already in isolated workspace at `<path>` on branch `<name>`."
@@ -51,7 +61,7 @@ Has the user already indicated their worktree preference in your instructions? I
 
 > "Would you like me to set up an isolated worktree? It protects your current branch from changes."
 
-Honor any existing declared preference without asking. If the user declines consent, work in place and skip to Step 3.
+Honor any existing declared preference without asking. If the user declines consent, work in place and skip to Step 2.
 
 ## Step 1: Create Isolated Workspace
 
@@ -59,7 +69,7 @@ Honor any existing declared preference without asking. If the user declines cons
 
 ### 1a. Native Worktree Tools (preferred)
 
-The user has asked for an isolated workspace (Step 0 consent). Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 3.
+The user has asked for an isolated workspace (Step 0 consent). Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 2.
 
 Native tools handle directory placement, branch creation, and cleanup automatically. Using `git worktree add` when you have a native tool creates phantom state your harness can't see or manage.
 
@@ -82,14 +92,7 @@ Follow this priority order. Explicit user preference always beats observed files
    ```
    If found, use it. If both exist, `.worktrees` wins.
 
-3. **Check for an existing global directory:**
-   ```bash
-   project=$(basename "$(git rev-parse --show-toplevel)")
-   ls -d ~/.config/superpowers/worktrees/$project 2>/dev/null
-   ```
-   If found, use it (backward compatibility with legacy global path).
-
-4. **If there is no other guidance available**, default to `.worktrees/` at the project root.
+3. **If there is no other guidance available**, default to `.worktrees/` at the project root.
 
 #### Safety Verification (project-local directories only)
 
@@ -99,20 +102,15 @@ Follow this priority order. Explicit user preference always beats observed files
 git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/dev/null
 ```
 
-**If NOT ignored:** Add to .gitignore, commit the change, then proceed.
+**If NOT ignored:** Add to .gitignore and commit only when permitted by the user and project; otherwise leave that edit unstaged and proceed.
 
 **Why critical:** Prevents accidentally committing worktree contents to repository.
-
-Global directories (`~/.config/superpowers/worktrees/`) need no verification.
 
 #### Create the Worktree
 
 ```bash
-project=$(basename "$(git rev-parse --show-toplevel)")
-
 # Determine path based on chosen location
-# For project-local: path="$LOCATION/$BRANCH_NAME"
-# For global: path="~/.config/superpowers/worktrees/$project/$BRANCH_NAME"
+path="$LOCATION/$BRANCH_NAME"
 
 git worktree add "$path" -b "$BRANCH_NAME"
 cd "$path"
@@ -120,9 +118,9 @@ cd "$path"
 
 **Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. Then run setup and baseline tests in place.
 
-## Step 3: Project Setup
+## Step 2: Project Setup
 
-Auto-detect and run appropriate setup:
+Inspect project instructions and installed dependencies, then run only the setup needed for this workspace. Network access or writes outside the workspace still need any approval required by the user or harness:
 
 ```bash
 # Node.js
@@ -139,7 +137,7 @@ if [ -f pyproject.toml ]; then poetry install; fi
 if [ -f go.mod ]; then go mod download; fi
 ```
 
-## Step 4: Verify Clean Baseline
+## Step 3: Verify Clean Baseline
 
 Run tests to ensure workspace starts clean:
 
@@ -172,53 +170,17 @@ Ready to implement <feature-name>
 | `worktrees/` exists | Use it (verify ignored) |
 | Both exist | Use `.worktrees/` |
 | Neither exists | Check instruction file, then default `.worktrees/` |
-| Global path exists | Use it (backward compat) |
-| Directory not ignored | Add to .gitignore + commit |
+| Directory not ignored | Add to .gitignore; commit only if permitted |
 | Permission error on create | Sandbox fallback, work in place |
 | Tests fail during baseline | Report failures + ask |
 | No package.json/Cargo.toml | Skip dependency install |
 
-## Common Mistakes
+## Common Rationalizations
 
-### Fighting the harness
-
-- **Problem:** Using `git worktree add` when the platform already provides isolation
-- **Fix:** Step 0 detects existing isolation. Step 1a defers to native tools.
-
-### Skipping detection
-
-- **Problem:** Creating a nested worktree inside an existing one
-- **Fix:** Always run Step 0 before creating anything
-
-### Skipping ignore verification
-
-- **Problem:** Worktree contents get tracked, pollute git status
-- **Fix:** Always use `git check-ignore` before creating project-local worktree
-
-### Assuming directory location
-
-- **Problem:** Creates inconsistency, violates project conventions
-- **Fix:** Follow priority: existing > global legacy > instruction file > default
-
-### Proceeding with failing tests
-
-- **Problem:** Can't distinguish new bugs from pre-existing issues
-- **Fix:** Report failures, get explicit permission to proceed
-
-## Red Flags
-
-**Never:**
-- Create a worktree when Step 0 detects existing isolation
-- Use `git worktree add` when you have a native worktree tool (e.g., `EnterWorktree`). This is the #1 mistake — if you have it, use it.
-- Skip Step 1a by jumping straight to Step 1b's git commands
-- Create worktree without verifying it's ignored (project-local)
-- Skip baseline test verification
-- Proceed with failing tests without asking
-
-**Always:**
-- Run Step 0 detection first
-- Prefer native tools over git fallback
-- Follow directory priority: existing > global legacy > instruction file > default
-- Verify directory is ignored for project-local
-- Auto-detect and run project setup
-- Verify clean test baseline
+| Excuse | Reality |
+|--------|---------|
+| "I'm obviously not in a worktree — no need to check" | Run Step 0. Harness-created isolation and submodules both fool eyeballing; the detection commands settle it. |
+| "`git worktree add` is quicker than hunting for a native tool" | A native tool (e.g. `EnterWorktree`) owns placement, branching, and cleanup. Bypassing it is the #1 mistake — it creates phantom state your harness can't see or manage. |
+| "The worktree directory is surely ignored already" | Run `git check-ignore`. An unignored worktree directory commits the whole tree into the repo. |
+| "Any directory name works" | Explicit instructions beat an existing project-local directory, which beats the `.worktrees/` default. |
+| "The workspace is fresh — baseline tests can wait" | A dirty baseline makes every later failure ambiguous. Run the tests now; proceeding past failures is your human partner's call. |

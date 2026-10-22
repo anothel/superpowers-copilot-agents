@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Render graphviz diagrams from a skill's SKILL.md to SVG files.
+ * Render graphviz diagrams from a Copilot .agent.md file to SVG files.
  *
  * Usage:
- *   ./render-graphs.js <skill-directory>           # Render each diagram separately
- *   ./render-graphs.js <skill-directory> --combine # Combine all into one diagram
+ *   ./render-graphs.js <agent-file>           # Render each diagram separately
+ *   ./render-graphs.js <agent-file> --combine # Combine all into one diagram
  *
- * Extracts all ```dot blocks from SKILL.md and renders to SVG.
+ * Extracts all ```dot blocks from the Agent definition and renders to SVG.
  * Useful for helping your human partner visualize the process flows.
  *
  * Requires: graphviz (dot) installed on system
@@ -15,11 +15,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 function extractDotBlocks(markdown) {
   const blocks = [];
-  const regex = /```dot\n([\s\S]*?)```/g;
+  const regex = /```dot\r?\n([\s\S]*?)```/g;
   let match;
 
   while ((match = regex.exec(markdown)) !== null) {
@@ -48,7 +48,7 @@ function extractGraphBody(dotContent) {
   return body.trim();
 }
 
-function combineGraphs(blocks, skillName) {
+function combineGraphs(blocks, agentName) {
   const bodies = blocks.map((block, i) => {
     const body = extractGraphBody(block.content);
     // Wrap each subgraph in a cluster for visual grouping
@@ -58,7 +58,7 @@ function combineGraphs(blocks, skillName) {
   }`;
   });
 
-  return `digraph ${skillName}_combined {
+  return `digraph ${agentName}_combined {
   rankdir=TB;
   compound=true;
   newrank=true;
@@ -69,7 +69,7 @@ ${bodies.join('\n\n')}
 
 function renderToSvg(dotContent) {
   try {
-    return execSync('dot -Tsvg', {
+    return execFileSync('dot', ['-Tsvg'], {
       input: dotContent,
       encoding: 'utf-8',
       maxBuffer: 10 * 1024 * 1024
@@ -84,32 +84,32 @@ function renderToSvg(dotContent) {
 function main() {
   const args = process.argv.slice(2);
   const combine = args.includes('--combine');
-  const skillDirArg = args.find(a => !a.startsWith('--'));
+  const agentFileArg = args.find(a => !a.startsWith('--'));
 
-  if (!skillDirArg) {
-    console.error('Usage: render-graphs.js <skill-directory> [--combine]');
+  if (!agentFileArg) {
+    console.error('Usage: render-graphs.js <agent-file> [--combine]');
     console.error('');
     console.error('Options:');
     console.error('  --combine    Combine all diagrams into one SVG');
     console.error('');
     console.error('Example:');
-    console.error('  ./render-graphs.js ../subagent-driven-development');
-    console.error('  ./render-graphs.js ../subagent-driven-development --combine');
+    console.error('  ./render-graphs.js ../subagent-driven-development.agent.md');
+    console.error('  ./render-graphs.js ../subagent-driven-development.agent.md --combine');
     process.exit(1);
   }
 
-  const skillDir = path.resolve(skillDirArg);
-  const skillFile = path.join(skillDir, 'SKILL.md');
-  const skillName = path.basename(skillDir).replace(/-/g, '_');
+  const agentFile = path.resolve(agentFileArg);
+  const agentName = path.basename(agentFile, '.agent.md').replace(/[^a-zA-Z0-9_]/g, '_');
 
-  if (!fs.existsSync(skillFile)) {
-    console.error(`Error: ${skillFile} not found`);
+  if (!fs.existsSync(agentFile) || !fs.statSync(agentFile).isFile()) {
+    console.error(`Error: ${agentFile} not found`);
     process.exit(1);
   }
 
-  // Check if dot is available
+  // Check if dot is available. Run the binary directly rather than probing
+  // with `which`, which is not a command on Windows.
   try {
-    execSync('which dot', { encoding: 'utf-8' });
+    execFileSync('dot', ['-V'], { stdio: 'ignore' });
   } catch {
     console.error('Error: graphviz (dot) not found. Install with:');
     console.error('  brew install graphviz    # macOS');
@@ -117,34 +117,34 @@ function main() {
     process.exit(1);
   }
 
-  const markdown = fs.readFileSync(skillFile, 'utf-8');
+  const markdown = fs.readFileSync(agentFile, 'utf-8');
   const blocks = extractDotBlocks(markdown);
 
   if (blocks.length === 0) {
-    console.log('No ```dot blocks found in', skillFile);
+    console.log('No ```dot blocks found in', agentFile);
     process.exit(0);
   }
 
-  console.log(`Found ${blocks.length} diagram(s) in ${path.basename(skillDir)}/SKILL.md`);
+  console.log(`Found ${blocks.length} diagram(s) in ${path.basename(agentFile)}`);
 
-  const outputDir = path.join(skillDir, 'diagrams');
+  const outputDir = path.join(process.cwd(), 'diagrams', agentName);
   if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir);
+    fs.mkdirSync(outputDir, { recursive: true });
   }
 
   if (combine) {
     // Combine all graphs into one
-    const combined = combineGraphs(blocks, skillName);
+    const combined = combineGraphs(blocks, agentName);
     const svg = renderToSvg(combined);
     if (svg) {
-      const outputPath = path.join(outputDir, `${skillName}_combined.svg`);
+      const outputPath = path.join(outputDir, `${agentName}_combined.svg`);
       fs.writeFileSync(outputPath, svg);
-      console.log(`  Rendered: ${skillName}_combined.svg`);
+      console.log(`  Rendered: ${agentName}_combined.svg`);
 
       // Also write the dot source for debugging
-      const dotPath = path.join(outputDir, `${skillName}_combined.dot`);
+      const dotPath = path.join(outputDir, `${agentName}_combined.dot`);
       fs.writeFileSync(dotPath, combined);
-      console.log(`  Source: ${skillName}_combined.dot`);
+      console.log(`  Source: ${agentName}_combined.dot`);
     } else {
       console.error('  Failed to render combined diagram');
     }

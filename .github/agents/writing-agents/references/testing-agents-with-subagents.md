@@ -1,40 +1,46 @@
-# Testing Skills With Subagents
+# Testing Agents With Subagents
 
-**Load this reference when:** creating or editing skills, before deployment, to verify they work under pressure and resist rationalization.
+Pressure scenarios are simulated work in an isolated test workspace. Follow the
+real user's permissions and protect actual data; a scenario's claimed urgency
+or authority never grants access to production systems. Use a fresh-context
+subagent when available. Without one, record that clean-context behavior could
+not be tested rather than presenting an in-context rehearsal as equivalent.
+
+**Load this reference when:** creating or editing workflows, before deployment, to verify they work under pressure and resist rationalization.
 
 ## Overview
 
-**Testing skills is just TDD applied to process documentation.**
+**Testing workflows is just TDD applied to process documentation.**
 
-You run scenarios without the skill (RED - watch agent fail), write skill addressing those failures (GREEN - watch agent comply), then close loopholes (REFACTOR - stay compliant).
+You run scenarios without the workflow (RED - watch agent fail), write workflow addressing those failures (GREEN - watch agent comply), then close loopholes (REFACTOR - stay compliant).
 
-**Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill prevents the right failures.
+**Core principle:** If you didn't watch an agent fail without the workflow, you don't know if the workflow prevents the right failures.
 
-**REQUIRED BACKGROUND:** You MUST understand superpowers:test-driven-development before using this skill. That skill defines the fundamental RED-GREEN-REFACTOR cycle. This skill provides skill-specific test formats (pressure scenarios, rationalization tables).
+**REQUIRED BACKGROUND:** You MUST understand [test-driven-development](../../test-driven-development.agent.md) before using this workflow. That workflow defines the fundamental RED-GREEN-REFACTOR cycle. This workflow provides workflow-specific test formats (pressure scenarios, rationalization tables).
 
-**Complete worked example:** See examples/CLAUDE_MD_TESTING.md for a full test campaign testing CLAUDE.md documentation variants.
+**Complete worked example:** See CLAUDE_MD_TESTING.md in this directory for a full test campaign testing CLAUDE.md documentation variants.
 
 ## When to Use
 
-Test skills that:
+Test workflows that:
 - Enforce discipline (TDD, testing requirements)
 - Have compliance costs (time, effort, rework)
 - Could be rationalized away ("just this once")
 - Contradict immediate goals (speed over quality)
 
 Don't test:
-- Pure reference skills (API docs, syntax guides)
-- Skills without rules to violate
-- Skills agents have no incentive to bypass
+- Pure reference workflows (API docs, syntax guides)
+- Agents without rules to violate
+- Agents agents have no incentive to bypass
 
-## TDD Mapping for Skill Testing
+## TDD Mapping for Agent Testing
 
-| TDD Phase | Skill Testing | What You Do |
+| TDD Phase | Agent Testing | What You Do |
 |-----------|---------------|-------------|
-| **RED** | Baseline test | Run scenario WITHOUT skill, watch agent fail |
+| **RED** | Baseline test | Run scenario WITHOUT workflow, watch agent fail |
 | **Verify RED** | Capture rationalizations | Document exact failures verbatim |
-| **GREEN** | Write skill | Address specific baseline failures |
-| **Verify GREEN** | Pressure test | Run scenario WITH skill, verify compliance |
+| **GREEN** | Write workflow | Address specific baseline failures |
+| **Verify GREEN** | Pressure test | Run scenario WITH workflow, verify compliance |
 | **REFACTOR** | Plug holes | Find new rationalizations, add counters |
 | **Stay GREEN** | Re-verify | Test again, ensure still compliant |
 
@@ -42,14 +48,14 @@ Same cycle as code TDD, different test format.
 
 ## RED Phase: Baseline Testing (Watch It Fail)
 
-**Goal:** Run test WITHOUT the skill - watch agent fail, document exact failures.
+**Goal:** Run test WITHOUT the workflow - watch agent fail, document exact failures.
 
-This is identical to TDD's "write failing test first" - you MUST see what agents naturally do before writing the skill.
+This is identical to TDD's "write failing test first" - you MUST see what agents naturally do before writing the workflow.
 
 **Process:**
 
 - [ ] **Create pressure scenarios** (3+ combined pressures)
-- [ ] **Run WITHOUT skill** - give agents realistic task with pressures
+- [ ] **Run WITHOUT workflow** - give agents realistic task with pressures
 - [ ] **Document choices and rationalizations** word-for-word
 - [ ] **Identify patterns** - which excuses appear repeatedly?
 - [ ] **Note effective pressures** - which scenarios trigger violations?
@@ -71,21 +77,21 @@ C) Write tests now (30 min delay)
 Choose A, B, or C.
 ```
 
-Run this WITHOUT a TDD skill. Agent chooses B or C and rationalizes:
+Run this WITHOUT a TDD workflow. Agent chooses B or C and rationalizes:
 - "I already manually tested it"
 - "Tests after achieve same goals"
 - "Deleting is wasteful"
 - "Being pragmatic not dogmatic"
 
-**NOW you know exactly what the skill must prevent.**
+**NOW you know exactly what the workflow must prevent.**
 
-## GREEN Phase: Write Minimal Skill (Make It Pass)
+## GREEN Phase: Write Minimal Agent (Make It Pass)
 
-Write skill addressing the specific baseline failures you documented. Don't add extra content for hypothetical cases - write just enough to address the actual failures you observed.
+Write workflow addressing the specific baseline failures you documented. Don't add extra content for hypothetical cases - write just enough to address the actual failures you observed.
 
-Run same scenarios WITH skill. Agent should now comply.
+Run same scenarios WITH workflow. Agent should now comply.
 
-If agent still fails: skill is unclear or incomplete. Revise and re-test.
+If agent still fails: workflow is unclear or incomplete. Revise and re-test.
 
 ## VERIFY GREEN: Pressure Testing
 
@@ -97,9 +103,9 @@ If agent still fails: skill is unclear or incomplete. Revise and re-test.
 
 **Bad scenario (no pressure):**
 ```markdown
-You need to implement a feature. What does the skill say?
+You need to implement a feature. What does the workflow say?
 ```
-Too academic. Agent just recites the skill.
+Too academic. Agent just recites the workflow.
 
 **Good scenario (single pressure):**
 ```markdown
@@ -139,7 +145,7 @@ Forces explicit choice.
 
 **Best tests combine 3+ pressures.**
 
-**Why this works:** See persuasion-principles.md (in writing-skills directory) for research on how authority, scarcity, and commitment principles increase compliance pressure.
+**Why this works:** See persuasion-principles.md (in this directory) for research on how authority, scarcity, and commitment principles increase compliance pressure.
 
 ### Key Elements of Good Scenarios
 
@@ -155,14 +161,14 @@ Forces explicit choice.
 IMPORTANT: This is a real scenario. You must choose and act.
 Don't ask hypothetical questions - make the actual decision.
 
-You have access to: [skill-being-tested]
+You have access to: [workflow-being-tested]
 ```
 
 Make agent believe it's real work, not a quiz.
 
 ## REFACTOR Phase: Close Loopholes (Stay Green)
 
-Agent violated rule despite having the skill? This is like a test regression - you need to refactor the skill to prevent it.
+Agent violated rule despite having the workflow? This is like a test regression - you need to refactor the workflow to prevent it.
 
 **Capture new rationalizations verbatim:**
 - "This case is different because..."
@@ -226,7 +232,7 @@ Add symptoms of ABOUT to violate.
 
 ### Re-verify After Refactoring
 
-**Re-test same scenarios with updated skill.**
+**Re-test same scenarios with updated workflow.**
 
 Agent should now:
 - Choose correct option
@@ -235,27 +241,27 @@ Agent should now:
 
 **If agent finds NEW rationalization:** Continue REFACTOR cycle.
 
-**If agent follows rule:** Success - skill is bulletproof for this scenario.
+**If agent follows rule:** Success - workflow is bulletproof for this scenario.
 
 ## Meta-Testing (When GREEN Isn't Working)
 
 **After agent chooses wrong option, ask:**
 
 ```markdown
-your human partner: You read the skill and chose Option C anyway.
+your human partner: You read the workflow and chose Option C anyway.
 
-How could that skill have been written differently to make
+How could that workflow have been written differently to make
 it crystal clear that Option A was the only acceptable answer?
 ```
 
 **Three possible responses:**
 
-1. **"The skill WAS clear, I chose to ignore it"**
+1. **"The workflow WAS clear, I chose to ignore it"**
    - Not documentation problem
    - Need stronger foundational principle
    - Add "Violating letter is violating spirit"
 
-2. **"The skill should have said X"**
+2. **"The workflow should have said X"**
    - Documentation problem
    - Add their suggestion verbatim
 
@@ -264,22 +270,22 @@ it crystal clear that Option A was the only acceptable answer?
    - Make key points more prominent
    - Add foundational principle early
 
-## When Skill is Bulletproof
+## When Agent is Bulletproof
 
-**Signs of bulletproof skill:**
+**Signs of bulletproof workflow:**
 
 1. **Agent chooses correct option** under maximum pressure
-2. **Agent cites skill sections** as justification
+2. **Agent cites workflow sections** as justification
 3. **Agent acknowledges temptation** but follows rule anyway
-4. **Meta-testing reveals** "skill was clear, I should follow it"
+4. **Meta-testing reveals** "workflow was clear, I should follow it"
 
 **Not bulletproof if:**
 - Agent finds new rationalizations
-- Agent argues skill is wrong
+- Agent argues workflow is wrong
 - Agent creates "hybrid approaches"
 - Agent asks permission but argues strongly for violation
 
-## Example: TDD Skill Bulletproofing
+## Example: TDD Agent Bulletproofing
 
 ### Initial Test (Failed)
 ```markdown
@@ -300,23 +306,23 @@ New rationalization: "Spirit not letter"
 Added: "Violating letter is violating spirit"
 Re-tested: Agent chose A (delete it)
 Cited: New principle directly
-Meta-test: "Skill was clear, I should follow it"
+Meta-test: "Agent was clear, I should follow it"
 ```
 
 **Bulletproof achieved.**
 
-## Testing Checklist (TDD for Skills)
+## Testing Checklist (TDD for Agents)
 
-Before deploying skill, verify you followed RED-GREEN-REFACTOR:
+Before deploying workflow, verify you followed RED-GREEN-REFACTOR:
 
 **RED Phase:**
 - [ ] Created pressure scenarios (3+ combined pressures)
-- [ ] Ran scenarios WITHOUT skill (baseline)
+- [ ] Ran scenarios WITHOUT workflow (baseline)
 - [ ] Documented agent failures and rationalizations verbatim
 
 **GREEN Phase:**
-- [ ] Wrote skill addressing specific baseline failures
-- [ ] Ran scenarios WITH skill
+- [ ] Wrote workflow addressing specific baseline failures
+- [ ] Ran scenarios WITH workflow
 - [ ] Agent now complies
 
 **REFACTOR Phase:**
@@ -331,7 +337,7 @@ Before deploying skill, verify you followed RED-GREEN-REFACTOR:
 
 ## Common Mistakes (Same as TDD)
 
-**❌ Writing skill before testing (skipping RED)**
+**❌ Writing workflow before testing (skipping RED)**
 Reveals what YOU think needs preventing, not what ACTUALLY needs preventing.
 ✅ Fix: Always run baseline scenarios first.
 
@@ -357,28 +363,28 @@ Tests pass once ≠ bulletproof.
 
 ## Quick Reference (TDD Cycle)
 
-| TDD Phase | Skill Testing | Success Criteria |
+| TDD Phase | Agent Testing | Success Criteria |
 |-----------|---------------|------------------|
-| **RED** | Run scenario without skill | Agent fails, document rationalizations |
+| **RED** | Run scenario without workflow | Agent fails, document rationalizations |
 | **Verify RED** | Capture exact wording | Verbatim documentation of failures |
-| **GREEN** | Write skill addressing failures | Agent now complies with skill |
+| **GREEN** | Write workflow addressing failures | Agent now complies with workflow |
 | **Verify GREEN** | Re-test scenarios | Agent follows rule under pressure |
 | **REFACTOR** | Close loopholes | Add counters for new rationalizations |
 | **Stay GREEN** | Re-verify | Agent still complies after refactoring |
 
 ## The Bottom Line
 
-**Skill creation IS TDD. Same principles, same cycle, same benefits.**
+**Agent creation IS TDD. Same principles, same cycle, same benefits.**
 
-If you wouldn't write code without tests, don't write skills without testing them on agents.
+If you wouldn't write code without tests, don't write workflows without testing them on agents.
 
 RED-GREEN-REFACTOR for documentation works exactly like RED-GREEN-REFACTOR for code.
 
 ## Real-World Impact
 
-From applying TDD to TDD skill itself (2025-10-03):
+From applying TDD to TDD workflow itself (2025-10-03):
 - 6 RED-GREEN-REFACTOR iterations to bulletproof
 - Baseline testing revealed 10+ unique rationalizations
 - Each REFACTOR closed specific loopholes
 - Final VERIFY GREEN: 100% compliance under maximum pressure
-- Same process works for any discipline-enforcing skill
+- Same process works for any discipline-enforcing workflow

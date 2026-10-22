@@ -1,6 +1,6 @@
 ---
+name: writing-agents
 description: "Use when creating new agents, editing existing agents, or verifying agents work before deployment"
-model: inherit
 handoffs:
   - label: "브레인스토밍 (Brainstorm)"
     agent: brainstorming
@@ -10,218 +10,390 @@ handoffs:
 
 # Writing Agents
 
+## VS Code Copilot
+
+Use the [Copilot tool mapping](using-superpowers/references/copilot-tools.md).
+Read a linked sibling `.agent.md` and apply its workflow in the main conversation.
+Delegate bounded analysis only when a subagent tool is exposed; otherwise work inline.
+Use the selected model when model controls are unavailable.
+
 ## Overview
 
-**에이전트 작성은 TDD를 프로세스 문서에 적용한 것이다.**
+**Writing agents IS Test-Driven Development applied to process documentation.**
 
-에이전트는 `.agent.md` 파일로 정의되며, `.github/agents/` 디렉터리에 위치한다. 각 에이전트는 YAML frontmatter와 Markdown 본문으로 구성된다.
+**Copilot agents are `.agent.md` files.** Put project agents in `.github/agents/` and personal agents in `~/.copilot/agents/`. This extension packages agent definitions and their supporting resources; follow its existing manifest when adding one.
 
-**Core principle:** 에이전트가 없을 때 실패하는 것을 먼저 확인하지 않으면, 에이전트가 올바른 것을 가르치는지 알 수 없다.
+You write test cases (pressure scenarios with subagents), watch them fail (baseline behavior), write the workflow (documentation), watch tests pass (agents comply), and refactor (close loopholes).
 
-**REQUIRED BACKGROUND:** `test-driven-development` 에이전트의 RED-GREEN-REFACTOR 사이클을 이해해야 한다.
+**Core principle:** If you didn't watch an agent fail without the workflow, you don't know if the workflow teaches the right thing.
+
+**REQUIRED BACKGROUND:** You MUST understand [test-driven-development](test-driven-development.agent.md) before using this workflow. That workflow defines the fundamental RED-GREEN-REFACTOR cycle. This workflow adapts TDD to documentation.
+
+**Reference:** [Anthropic authoring guidance](writing-agents/references/anthropic-best-practices.md) supplies general documentation principles. Its Skill discovery, YAML schema, runtime paths, and model examples describe Anthropic. Use [Agent discovery](writing-agents/references/discovery.md) for this extension's Copilot format.
 
 ## What is an Agent?
 
-**에이전트(Agent)** 는 VS Code Copilot에서 특정 워크플로우나 작업 유형에 대한 전문 지침을 담은 `.agent.md` 파일이다.
+A **custom agent** is a selectable `.agent.md` definition containing a reusable workflow, techniques, patterns, and tool guidance for VS Code Copilot.
 
-**에이전트는:** 특정 워크플로우의 단계별 가이드, 의사결정 트리, 품질 기준
+**Agents are:** Reusable techniques, patterns, tools, reference guides
 
-**에이전트는 아닌 것:** 일반적인 코딩 팁, 한 번 쓰는 스크립트, 프로젝트별 설정 (그건 AGENTS.md에)
-
-## When to Create an Agent
-
-**Create when:**
-- 워크플로우가 직관적이지 않아 반복적으로 실수가 발생
-- 여러 프로젝트에서 재사용할 패턴
-- 다른 사람도 이 워크플로우를 따라야 할 때
-
-**Don't create for:**
-- 일회성 작업
-- 이미 잘 문서화된 표준 관행
-- 프로젝트별 설정 (AGENTS.md에)
+**Agents are NOT:** Narratives about how you solved a problem once
 
 ## TDD Mapping for Agents
 
 | TDD Concept | Agent Creation |
 |-------------|----------------|
-| **Test case** | 에이전트 없이 작업 수행하는 시나리오 |
-| **Production code** | 에이전트 파일 (`.agent.md`) |
-| **Test fails (RED)** | 에이전트 없이 작업 시 품질 저하 또는 규칙 위반 확인 |
-| **Test passes (GREEN)** | 에이전트 적용 후 규칙 준수 확인 |
-| **Refactor** | 허점을 발견하고 보강하되 기존 동작 유지 |
+| **Test case** | Pressure scenario with subagent |
+| **Production code** | Agent definition (`agent-name.agent.md`) |
+| **Test fails (RED)** | Agent violates rule without workflow (baseline) |
+| **Test passes (GREEN)** | Agent complies with workflow present |
+| **Refactor** | Close loopholes while maintaining compliance |
+| **Write test first** | Run baseline scenario BEFORE writing workflow |
+| **Watch it fail** | Document exact rationalizations agent uses |
+| **Minimal code** | Write workflow addressing those specific violations |
+| **Watch it pass** | Verify agent now complies |
+| **Refactor cycle** | Find new rationalizations → plug → re-verify |
 
-## Agent 파일 구조
+The entire workflow creation process follows RED-GREEN-REFACTOR.
 
-### YAML Frontmatter
+## When to Create an Agent
 
-모든 `.agent.md` 파일은 YAML frontmatter로 시작한다:
+**Create when:**
+- Technique wasn't intuitively obvious to you
+- You'd reference this again across projects
+- Pattern applies broadly (not project-specific)
+- Others would benefit
 
-```yaml
----
-description: "Use when [triggering conditions] - [key behavior]"
-model: inherit
-handoffs:
-  - label: "한국어 레이블 (English Label)"
-    agent: target-agent-name
-    prompt: "Context to pass to target agent"
-    send: false
----
-```
+**Don't create for:**
+- One-off solutions
+- Standard practices well-documented elsewhere
+- Project-specific conventions (put in your instructions file)
+- Mechanical constraints (if it's enforceable with regex/validation, automate it—save documentation for judgment calls)
 
-**필수 필드:**
-- `description` — 에이전트가 활성화되는 조건. "Use when..."으로 시작
-- `model` — 사용할 모델. 보통 `inherit`
+## Agent Types
 
-**선택 필드:**
-- `handoffs` — 다른 에이전트로의 핸드오프 정의
-  - `label` — 한국어+영어 이중 표기 사용
-  - `agent` — 대상 에이전트의 파일명 (`.agent.md` 확장자 제외)
-  - `prompt` — 대상 에이전트에 전달할 컨텍스트
-  - `send: false` — 사용자 확인 후 핸드오프 (자동 핸드오프 아님)
-- `tools` — 에이전트가 사용 가능한 도구 제한
+### Technique
+Concrete method with steps to follow (condition-based-waiting, root-cause-tracing)
 
-### Description 작성 규칙
+### Pattern
+Way of thinking about problems (flatten-with-flags, test-invariants)
 
-**CRITICAL: Description = When to Use, NOT What the Agent Does**
+### Reference
+API docs, syntax guides, tool documentation (office docs)
 
-Description은 트리거 조건만 기술한다. 에이전트의 프로세스나 워크플로우를 요약하지 않는다.
+## Directory Structure
 
-```yaml
-# BAD: 워크플로우를 요약 — AI가 본문을 읽지 않고 description으로 동작할 수 있음
-description: Use when executing plans - dispatches subagent per task with code review between tasks
 
-# GOOD: 트리거 조건만
-description: Use when executing implementation plans with independent tasks in the current session
-```
-
-### 디렉터리 구조
-
-```
+```text
 .github/agents/
-  agent-name.agent.md        # 에이전트 파일 (필수)
-  agent-name/                 # 지원 파일 디렉터리 (선택)
-    supporting-file.md        # 참조 문서, 프롬프트 등
+  agent-name.agent.md      # Main definition
+  agent-name/             # Optional supporting resources
+    references/guide.md
+    scripts/tool.js
 ```
 
-**Flat namespace** — 모든 에이전트가 `.github/agents/` 에 위치
+**Flat namespace** - selectable `.agent.md` files share the agent directory. Users select a custom agent; other agents can delegate when the host exposes that capability. A trigger description does not automatically activate an agent.
 
-**지원 파일 분리 기준:**
-1. 100줄 이상의 참조 문서
-2. 재사용 가능한 프롬프트 또는 스크립트
-3. 그 외는 에이전트 본문에 인라인
+**Separate files for:**
+1. **Heavy reference** (100+ lines) - API docs, comprehensive syntax
+2. **Reusable tools** - Scripts, utilities, templates
 
-### Cross-Referencing Other Agents
+**Keep inline:**
+- Principles and concepts
+- Code patterns (< 50 lines)
+- Everything else
 
-에이전트를 참조할 때는 에이전트 이름만 사용하고 명시적 요구 마커를 붙인다:
-- Good: `**REQUIRED:** Use the \`test-driven-development\` agent`
-- Bad: `See skills/testing/test-driven-development` (필수인지 불명확)
+## Writing `.agent.md`
 
-## Flowchart Usage
+An agent's `description` says only when to use it: triggering conditions and
+symptoms, starting with "Use when...". Keep the process in the body; a description
+that summarizes it can become a shortcut that replaces reading the instructions.
 
-```dot
-digraph when_flowchart {
-    "Need to show information?" [shape=diamond];
-    "Decision where I might go wrong?" [shape=diamond];
-    "Use markdown" [shape=box];
-    "Small inline flowchart" [shape=box];
+When you write or change a workflow's frontmatter, name or description, or
+need to cut its size, read [Agent discovery](writing-agents/references/discovery.md):
+the `.agent.md` template, description and keyword guidance, naming, token
+budgets, and cross-referencing other workflows.
 
-    "Need to show information?" -> "Decision where I might go wrong?" [label="yes"];
-    "Decision where I might go wrong?" -> "Small inline flowchart" [label="yes"];
-    "Decision where I might go wrong?" -> "Use markdown" [label="no"];
-}
-```
+## Flowcharts
 
-**Use flowcharts ONLY for:**
-- Non-obvious decision points
-- Process loops where you might stop too early
-- "When to use A vs B" decisions
+When you add or change a flowchart in a workflow, read
+[Flowcharts](writing-agents/references/flowcharts.md) first: when a flowchart
+earns its place, the graphviz conventions, and how to render one.
 
-**Never use flowcharts for:**
-- Reference material → Tables, lists
-- Code examples → Markdown blocks
-- Linear instructions → Numbered lists
-- Labels without semantic meaning (step1, helper2)
+## Code Examples
+
+**One excellent example beats many mediocre ones**
+
+Choose most relevant language:
+- Testing techniques → TypeScript/JavaScript
+- System debugging → Shell/Python
+- Data processing → Python
+
+**Good example:**
+- Complete and runnable
+- Well-commented explaining WHY
+- From real scenario
+- Shows pattern clearly
+- Ready to adapt (not generic template)
+
+**Don't:**
+- Implement in 5+ languages
+- Create fill-in-the-blank templates
+- Write contrived examples
+
+You're good at porting - one great example is enough.
 
 ## File Organization
 
-### 독립 에이전트 (Self-Contained)
-```
-.github/agents/
-  my-agent.agent.md    # 모든 내용 인라인
-```
-적용: 내용이 한 파일에 담길 때
+### Self-Contained Agent
 
-### 지원 파일 포함 에이전트
-```
-.github/agents/
-  my-agent.agent.md       # 메인 로직
-  my-agent/
-    reference.md          # 참조 문서
-    prompt-template.md    # 서브에이전트 프롬프트
-```
-적용: 참조 문서가 길거나 재사용 프롬프트가 있을 때
+`.github/agents/my-agent.agent.md` contains the whole workflow.
 
-## The Iron Law (TDD 원칙과 동일)
+### Agent with Supporting Resources
+
+`.github/agents/my-agent.agent.md` links to resources under
+`.github/agents/my-agent/`. Resolve paths relative to the file containing
+the link, not the workspace working directory. Supporting prompts and references
+are not additional selectable agents.
+
+Invoke bundled scripts through their interpreter in the prose (`bash scripts/tool.sh`, `node scripts/tool.js`), never by bare path: some harness plugin packagers strip executable bits, and a bare `scripts/tool.sh` fails there with `Permission denied`.
+
+## The Iron Law (Same as TDD)
 
 ```
 NO AGENT WITHOUT A FAILING TEST FIRST
 ```
 
-새 에이전트를 만들기 전에 에이전트 없이 작업을 수행하여 실패를 확인한다.
-기존 에이전트를 수정하기 전에도 현재 상태에서의 문제를 먼저 확인한다.
+This applies to NEW workflows AND EDITS to existing workflows.
 
-**예외 없음:**
-- "간단한 추가"도 예외 아님
-- "문서 업데이트"도 예외 아님
-- 테스트 없이 변경한 내용은 유지하지 않는다
+Write workflow before testing? Delete it. Start over.
+Edit workflow without testing? Same violation.
 
-**REQUIRED BACKGROUND:** `test-driven-development` 에이전트가 왜 이것이 중요한지 설명한다. 동일한 원칙이 에이전트 문서에도 적용된다.
+**No exceptions:**
+- Not for "simple additions"
+- Not for "just adding a section"
+- Not for "documentation updates"
+- Don't keep untested changes as "reference"
+- Don't "adapt" while running tests
+- Delete means delete
+
+**REQUIRED BACKGROUND:** The [test-driven-development](test-driven-development.agent.md) workflow explains why this matters. Same principles apply to documentation.
+
+## Testing All Agent Types
+
+Different workflow types need different test approaches:
+
+### Discipline-Enforcing Agents (rules/requirements)
+
+**Examples:** TDD, verification-before-completion, designing-before-coding
+
+**Test with:**
+- Academic questions: Do they understand the rules?
+- Pressure scenarios: Do they comply under stress?
+- Multiple pressures combined: time + sunk cost + exhaustion
+- Identify rationalizations and add explicit counters
+
+**Success criteria:** Agent follows rule under maximum pressure
+
+### Technique Agents (how-to guides)
+
+**Examples:** condition-based-waiting, root-cause-tracing, defensive-programming
+
+**Test with:**
+- Application scenarios: Can they apply the technique correctly?
+- Variation scenarios: Do they handle edge cases?
+- Missing information tests: Do instructions have gaps?
+
+**Success criteria:** Agent successfully applies technique to new scenario
+
+### Pattern Agents (mental models)
+
+**Examples:** reducing-complexity, information-hiding concepts
+
+**Test with:**
+- Recognition scenarios: Do they recognize when pattern applies?
+- Application scenarios: Can they use the mental model?
+- Counter-examples: Do they know when NOT to apply?
+
+**Success criteria:** Agent correctly identifies when/how to apply pattern
+
+### Reference Agents (documentation/APIs)
+
+**Examples:** API documentation, command references, library guides
+
+**Test with:**
+- Retrieval scenarios: Can they find the right information?
+- Application scenarios: Can they use what they found correctly?
+- Gap testing: Are common use cases covered?
+
+**Success criteria:** Agent finds and correctly applies reference information
 
 ## Common Rationalizations for Skipping Testing
 
 | Excuse | Reality |
 |--------|---------|
-| "에이전트가 명확하다" | 나에게 명확 ≠ 다른 AI에게 명확. 테스트하라. |
-| "참조 문서일 뿐이다" | 참조에도 빈틈이 있다. 테스트하라. |
-| "테스트가 과하다" | 테스트 안 한 에이전트는 항상 문제가 있다. |
-| "문제가 생기면 테스트하겠다" | 문제 = 이미 실패. 배포 전에 테스트하라. |
-| "자신 있다" | 과신이 문제를 보장한다. 어쨌든 테스트하라. |
+| "Agent is obviously clear" | Clear to you ≠ clear to other agents. Test it. |
+| "It's just a reference" | References can have gaps, unclear sections. Test retrieval. |
+| "Testing is overkill" | Untested workflows have issues. Always. 15 min testing saves hours. |
+| "I'll test if problems emerge" | Problems = agents can't use workflow. Test BEFORE deploying. |
+| "Too tedious to test" | Testing is less tedious than debugging bad workflow in production. |
+| "I'm confident it's good" | Overconfidence guarantees issues. Test anyway. |
+| "Academic review is enough" | Reading ≠ using. Test application scenarios. |
+| "No time to test" | Deploying untested workflow wastes more time fixing it later. |
 
-## Bulletproofing Agents Against Rationalization
+**All of these mean: Test before deploying. No exceptions.**
 
-규율을 강제하는 에이전트(TDD 등)는 합리화에 저항해야 한다.
+## Match the Form to the Failure
 
-### Close Every Loophole Explicitly
+Before writing guidance, classify the baseline failure. The form that bulletproofs one failure type measurably backfires on another.
 
-규칙만 명시하지 말고, 구체적인 우회로를 금지한다:
+| Baseline failure | Right form | Wrong form |
+|---|---|---|
+| Skips/violates a rule under pressure (knows better, does it anyway) | Prohibition + rationalization table + red flags (see writing-agents/references/bulletproofing.md) | Soft guidance ("prefer...", "consider...") |
+| Complies, but output has the wrong shape (bloated prompt, buried verdict, restated spec) | Positive recipe or contract: state what the output IS — its parts, in order | Prohibition list ("don't restate", "never narrate") |
+| Omits a required element from something they already produce | Structural: REQUIRED field or slot in the template they fill in | Prose reminders near the template |
+| Behavior should depend on a condition | Conditional keyed to an observable predicate ("if the brief exists, reference it") | Unconditional rule + exemption clauses |
 
-```markdown
-Write code before test? Delete it. Start over.
+**Why prohibitions backfire on shaping problems:** under a competing incentive ("make the prompt self-contained"), agents negotiate with "don't X". In head-to-head wording tests on dispatch-prompt guidance, the prohibition arm produced clearly more of the unwanted content than the recipe arm (fully separated distributions), and trended worse than even the no-guidance control — micro-test your own case rather than assuming, but never reach for the prohibition by default. A recipe leaves nothing to negotiate: the output matches the stated shape or it doesn't.
 
-**No exceptions:**
-- Don't keep it as "reference"
-- Don't "adapt" it while writing tests
-- Delete means delete
+**Rules for whichever form you pick:**
+- **No nuance clauses.** "Don't X unless it matters" reopens the negotiation — appending a single nuance clause to a winning recipe degraded it from consistent to noisy in the same wording tests. Express a real exception as its own conditional on an observable predicate.
+- **Exemption clauses don't scope.** "This limit doesn't apply to code blocks" still suppresses code blocks. If part of the output must be exempt, restructure so the rule can't reach it.
+
+## Bulletproofing Against Rationalization
+
+When the baseline failure is a discipline failure, read
+[writing-agents/references/bulletproofing.md](writing-agents/references/bulletproofing.md) before you write
+the guidance: closing loopholes, the spirit-vs-letter line, the
+rationalization table, and the red-flags list.
+
+## RED-GREEN-REFACTOR for Agents
+
+Follow the TDD cycle:
+
+### RED: Write Failing Test (Baseline)
+
+Run pressure scenario with subagent WITHOUT the workflow. Document exact behavior:
+- What choices did they make?
+- What rationalizations did they use (verbatim)?
+- Which pressures triggered violations?
+
+This is "watch the test fail" - you must see what agents naturally do before writing the workflow.
+
+### GREEN: Write Minimal Agent
+
+Write workflow that addresses those specific rationalizations. Don't add extra content for hypothetical cases.
+
+Run same scenarios WITH workflow. Agent should now comply.
+
+### REFACTOR: Close Loopholes
+
+Agent found new rationalization? Add explicit counter. Re-test until bulletproof.
+
+### Micro-Test Wording Before Full Scenarios
+
+Full pressure-scenario runs are the final gate, but they are slow and expensive per iteration. Verify the wording itself first with micro-tests:
+
+1. **One fresh-context sample per call** — a raw API call, or a single-shot subagent if you don't have API access. System prompt = the realistic context the guidance will live in (the full workflow or prompt template, not the guidance in isolation); user message = a task that tempts the failure.
+2. **Always include a no-guidance control.** If the control doesn't exhibit the failure, there is nothing to fix — stop, don't author the guidance.
+3. **5+ reps per variant.** Single samples lie.
+4. **Manually read every flagged match.** Score programmatically if you like, but template echoes and quoted counter-examples masquerade as hits; automated counts alone overstate both failure and success.
+5. **Variance is a metric.** When guidance lands, reps converge on the same shape. Five different interpretations across five reps means the wording isn't binding — tighten the form before adding words.
+
+Micro-tests verify wording; they do not replace pressure scenarios for discipline workflows.
+
+**Testing methodology:** See [Testing agents with subagents](writing-agents/references/testing-agents-with-subagents.md) for the complete testing methodology:
+- How to write pressure scenarios
+- Pressure types (time, sunk cost, authority, exhaustion)
+- Plugging holes systematically
+- Meta-testing techniques
+
+## Anti-Patterns
+
+### ❌ Narrative Example
+"In session 2025-10-03, we found empty projectDir caused..."
+**Why bad:** Too specific, not reusable
+
+### ❌ Multi-Language Dilution
+example-js.js, example-py.py, example-go.go
+**Why bad:** Mediocre quality, maintenance burden
+
+### ❌ Code in Flowcharts
+```dot
+step1 [label="import fs"];
+step2 [label="read file"];
 ```
+**Why bad:** Can't copy-paste, hard to read
 
-### Address "Spirit vs Letter" Arguments
+### ❌ Generic Labels
+helper1, helper2, step3, pattern4
+**Why bad:** Labels should have semantic meaning
 
-초반에 기본 원칙을 추가한다:
+## STOP: Before Moving to Next Agent
 
-```markdown
-**Violating the letter of the rules is violating the spirit of the rules.**
-```
+**After writing ANY workflow, you MUST STOP and complete the deployment process.**
 
-### Build Rationalization Table
+**Do NOT:**
+- Create multiple workflows in batch without testing each
+- Move to next workflow before current one is verified
+- Skip testing because "batching is more efficient"
 
-베이스라인 테스트에서 발견한 합리화를 모두 테이블에 기록한다.
+**The deployment checklist below is MANDATORY for EACH workflow.**
 
-## 배포 (Deployment)
+Deploying untested workflows = deploying untested code. It's a violation of quality standards.
 
-에이전트 파일은 `extension.ts`가 익스텐션 활성화 시 자동으로 `~/.superpowers-copilot/agents/`에 복사한다. 새 에이전트를 추가하면:
+## Agent Creation Checklist (TDD Adapted)
 
-1. `.github/agents/` 에 `.agent.md` 파일 생성
-2. 지원 파일이 있으면 같은 이름의 디렉터리 생성
-3. 익스텐션 재빌드 후 활성화하면 자동 배포됨
+**IMPORTANT: Create a todo for EACH checklist item below.**
 
-별도의 등록 코드는 불필요 — 디렉터리 복사가 재귀적으로 동작한다.
+**RED Phase - Write Failing Test:**
+- [ ] Create pressure scenarios (3+ combined pressures for discipline workflows)
+- [ ] Run scenarios WITHOUT workflow - document baseline behavior verbatim
+- [ ] Identify patterns in rationalizations/failures
+
+**GREEN Phase - Write Minimal Agent:**
+- [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
+- [ ] YAML frontmatter with a useful `name` and trigger-focused `description`; follow the Copilot format in [Agent discovery](writing-agents/references/discovery.md)
+- [ ] Description starts with "Use when..." and includes specific triggers/symptoms
+- [ ] Description written in third person
+- [ ] Keywords throughout for search (errors, symptoms, tools)
+- [ ] Clear overview with core principle
+- [ ] Address specific baseline failures identified in RED
+- [ ] Guidance form matches the failure type (see Match the Form to the Failure)
+- [ ] For behavior-shaping guidance: wording micro-tested against a no-guidance control (5+ reps, every flagged match read manually) — N/A for pure reference workflows
+- [ ] Code inline OR link to separate file
+- [ ] One excellent example (not multi-language)
+- [ ] Run scenarios WITH workflow - verify agents now comply
+
+**REFACTOR Phase - Close Loopholes:**
+- [ ] Identify NEW rationalizations from testing
+- [ ] Add explicit counters (if discipline workflow)
+- [ ] Build rationalization table from all test iterations
+- [ ] Create red flags list
+- [ ] Re-test until bulletproof
+
+**Quality Checks:**
+- [ ] Small flowchart only if decision non-obvious
+- [ ] Quick reference table
+- [ ] Common mistakes section
+- [ ] No narrative storytelling
+- [ ] Supporting files only for tools or heavy reference
+
+**Deployment:**
+- [ ] Add the `.agent.md` and resources to the extension using its existing packaging manifest
+- [ ] Run the project checks and inspect the packaged agent/resource paths
+- [ ] In VS Code Copilot, select the agent and run the pressure scenarios; report checks that could not run
+- [ ] Leave staging, commits, pushes, publication, and external contributions to the user unless explicitly requested
+
+## Discovery Workflow
+
+How future agents find your workflow:
+
+1. **Encounters problem** ("tests are flaky")
+2. **Searches workflows** (greps descriptions, browses categories)
+3. **Selects or delegates to Agent** (description matches)
+4. **Scans overview** (is this relevant?)
+5. **Reads patterns** (quick reference table)
+6. **Loads example** (only when implementing)
+
+**Optimize for this flow** - put searchable terms early and often.
