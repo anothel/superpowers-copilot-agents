@@ -76,7 +76,7 @@ The check validates Agent frontmatter, routing targets, local resource links,
 and VSIX resource inclusion. The test checks the visual server's HTTP/WebSocket
 authentication on loopback, with temporary state inside the workspace.
 Packaging runs the Agent check again automatically and produces
-`superpowers-copilot-agents-7.0.1.vsix`. No TypeScript compilation is required.
+`superpowers-copilot-agents-7.0.2.vsix`. No TypeScript compilation is required.
 Install the VSIX with **Extensions: Install from VSIX...**, reload VS Code, then
 check the Agent dropdown. Publishing remains a separate maintainer action.
 

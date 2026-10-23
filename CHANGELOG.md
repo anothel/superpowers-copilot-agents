@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.0.2
+
+- Add an extension icon for the Marketplace and VS Code extension details.
+- No changes to Agent workflows or runtime behavior.
+
 ## 7.0.1
 
 - Port Superpowers v7.0.1 workflows and runtime resources to Copilot custom Agents.
